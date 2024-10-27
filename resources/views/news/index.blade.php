@@ -83,7 +83,6 @@ $(document).ready(function() {
                     table.row.add([
                         news.title,
                         news.published_at,
-                        news.coin.name
                     ]).draw();
                 });
             },

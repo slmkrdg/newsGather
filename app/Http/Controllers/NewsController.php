@@ -27,24 +27,28 @@ class NewsController extends Controller
     
     public function filter(NewsFilterRequest $request) {
         $query = Cache::remember('news_all', 60 * 60, function () {
-            return News::query()->get();
+            return News::query();
         });
+        
+        $query = News::query();
 
+        // Coin Seçimi (Select Input)
         if ($request->has('coin') && !empty($request->coin)) {
-            $query = News::whereHas('coins', function ($query) use ($request) {
-                $query->where('code', $request->coin);
-            })->get();
+            $query->whereHas('coins', function($q) use ($request) {
+                $q->where('code', $request->coin);  // Coin koduna göre filtreleme
+            });
         }
-    
-        // Tarih filtreleme
+
+        // Tarih Filtreleme
         if ($request->has('start_date') && !empty($request->start_date)) {
             $query->where('published_at', '>=', $request->start_date);
         }
         if ($request->has('end_date') && !empty($request->end_date)) {
             $query->where('published_at', '<=', $request->end_date);
         }
-    
-        $news = $query->with('coin')->get(); // İlgili coin ile birlikte haberleri al
+
+        // Filtrelenmiş haberleri al
+        $news = $query->with('coins')->get();
         return response()->json(['news' => $news]);
     }
 }
